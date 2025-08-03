@@ -45,24 +45,36 @@ jobs:
           
           df -h
           
+          sudo systemctl stop docker
+          
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL /usr/local/share/powershell /usr/share/swift || true
+          sudo docker rm -f $(sudo docker ps -aq) || true
           sudo docker image prune --all --force
+          sudo docker system prune -a --volumes -f
+          sudo rm -rf /var/lib/docker
           echo "some directories deleted"
           
           # Remove large unwanted packages
           sudo apt-get purge -y \
             aria2 ansible azure-cli shellcheck rpm xorriso zsync \
             esl-erlang firefox gfortran-8 gfortran-9 google-chrome-stable \
-            google-cloud-sdk imagemagick \
+            google-cloud-sdk google-cloud-cli imagemagick \
             libmagickcore-dev libmagickwand-dev libmagic-dev ant ant-optional kubectl \
             mercurial apt-transport-https mono-complete libmysqlclient \
             unixodbc-dev yarn chrpath libssl-dev libxft-dev \
             libfreetype6 libfreetype6-dev libfontconfig1 libfontconfig1-dev \
-            snmp pollinate libpq-dev postgresql-client powershell ruby-full \
+            snmp pollinate libpq-dev postgresql-client powershell ruby-full rbenv ruby-dev \
             sphinxsearch subversion mongodb-org microsoft-edge-stable || true
           
           # Regex-based purges (for bulk families like mysql, php, dotnet)
           sudo apt-get purge -y $(dpkg-query -W -f='${binary:Package}\n' | grep -E '^mysql|^php|^dotnet') || true
+          
+          sudo apt-get purge -y $(dpkg-query -W -f='${binary:Package}\n' | grep -E '^golang|^go-') || true
+          sudo rm -rf /usr/local/go /usr/lib/go-*
+          sudo apt-get purge -y nodejs npm || true
+          sudo apt-get purge -y openjdk-* default-jdk default-jre || true
+          sudo apt-get purge -y rustc cargo || true
+          sudo apt-get purge -y scala sbt || true
           
           # Clean up
           sudo apt-get autoremove -y
@@ -70,6 +82,43 @@ jobs:
           echo "some packages purged"
           
           df -h
+
+      # - name: Maximize Build Space
+        # uses: easimon/maximize-build-space@master
+        # with:
+          # root-reserve-mb: 1024
+          # temp-reserve-mb: 1024
+          # swap-size-mb: 20480
+          # remove-dotnet: 'true'
+          # remove-android: 'true'
+          # remove-haskell: 'true'
+          # remove-codeql: 'true'
+          # remove-docker-images: 'true'
+
+      # - name: Setup SWAP
+        # run: |
+          # sudo swapoff -a
+          # # Check available disk space before creating swap
+          # AVAILABLE_SPACE=$(df -h . | awk 'NR==2 {print $4}' | grep -o '[0-9]\+')
+          # if [ "$AVAILABLE_SPACE" -lt 21000 ]; then
+            # echo "Error: Not enough disk space for 20 GB swap file. Available: $AVAILABLE_SPACE MB"
+            # exit 1
+          # fi
+          # sudo fallocate -l 22G /swapfile
+          # sudo chmod 600 /swapfile
+          # sudo mkswap /swapfile
+          # sudo swapon -p 1 /swapfile
+          # echo 'vm.swappiness=1' | sudo tee -a /etc/sysctl.conf
+          # echo 'vm.vfs_cache_pressure=50' | sudo tee -a /etc/sysctl.conf
+          # echo 'vm.overcommit_memory=1' | sudo tee -a /etc/sysctl.conf
+          # echo 'vm.overcommit_ratio=200' | sudo tee -a /etc/sysctl.conf
+          # sudo sysctl -p
+          # free -h
+          # df -h
+
+      - name: Clone AnyKernel3 and Other Dependencies
+        run: |
+          echo "Cloning AnyKernel3 and other dependencies..."
           
           # Install dependencies
           echo "Installing Repo and Python"
@@ -83,10 +132,6 @@ jobs:
           
           # Set CONFIG Environment Variable
           echo "CONFIG=${{ inputs.model }}" >> $GITHUB_ENV
-
-      - name: Clone AnyKernel3 and Other Dependencies
-        run: |
-          echo "Cloning AnyKernel3 and other dependencies..."
           
           ANYKERNEL_BRANCH="gki-2.0"
           if [[ -z "${{ inputs.susfs_branch }}" ]]; then
@@ -390,6 +435,7 @@ jobs:
           else
             # cd ./kernel_platform/common/
             # make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnuabeihf- CC="$CONFIG/kernel_platform/prebuilts-master/clang/host/linux-x86/clang-r450784e/bin/clang" LD="$CONFIG/kernel_platform/prebuilts-master/clang/host/linux-x86/clang-r450784e/bin/ld.lld" HOSTCC=clang HOSTLD=ld.lld O="$CONFIG/kernel_platform/out" KCFLAGS+=-Wno-error gki_defconfig all 2>&1 | tee build_$(date +"%Y_%m_%d_%H_%M_%S").log
+            sed -i '/export EXTRA_KBUILD_ARGS="--skip abl"/a export SKIP_VENDOR_BOOT=true\nunset BUILD_VENDOR_BOOT_IMG' ./kernel_platform/oplus/build/oplus_build_kernel.sh
             LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ inputs.soc }} "$BUILD_TYPE"
           fi
 

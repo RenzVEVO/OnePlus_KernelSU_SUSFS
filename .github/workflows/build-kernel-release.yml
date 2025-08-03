@@ -19,7 +19,7 @@ on:
         options:
           - stable
           - next
-        default: stable
+        default: next
       susfs_branch:
         required: true
         type: string
@@ -36,6 +36,12 @@ jobs:
             soc: kalama
             branch: oneplus/sm8550
             manifest: oneplus_11_v.xml
+            android_version: android13
+            kernel_version: "5.15"
+          - model: OP11u
+            soc: kalama
+            branch: oneplus/sm8550
+            manifest: oneplus_11_u.xml
             android_version: android13
             kernel_version: "5.15"
           # - model: OP11r
