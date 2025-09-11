@@ -81,7 +81,7 @@ jobs:
           - model: OP-NORD-4_2
             soc: pineapple
             branch: oneplus/sm7675
-            manifest: manifests/oneplus_nord_4_v.xml
+            manifest: https://gist.githubusercontent.com/RenzVEVO/32df3c84c7b3720c45acd8d3919d92f0/raw/9ce21b52d2687580fc803d0dfd6dd393a1a843d1/oneplus_nord_4_v.xml
             android_version: android14
             kernel_version: "6.1"
     runs-on: ubuntu-latest
