@@ -335,8 +335,8 @@ runs:
         EOF
 
     - name: Add SSG I/O Scheduler
-       shell: bash
-       run: |
+      shell: bash
+      run: |
         set -euo pipefail
         cd "$CONFIG/kernel_platform"
         cat >> common/arch/arm64/configs/gki_defconfig <<EOF
@@ -562,4 +562,3 @@ runs:
       with:
         name: kernel-${{ env.CONFIG }}
         path: ${{ env.CONFIG }}/artifacts/
-
