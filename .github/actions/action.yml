@@ -29,6 +29,11 @@ inputs:
     required: false
     type: string
     default: O2  # Choices: O2 or O3
+  enable_ssg_io_scheduler:
+    description: 'Enable Samsung SSG I/O Scheduler'
+    required: false
+    type: boolean
+    default: false
 
 outputs:
   kernel_version:
@@ -253,7 +258,6 @@ runs:
               patch -p1 --forward < "../../../kernel_patches/next/susfs_fix_patches/$susfs_version/fix_$file.c.patch"
             done
             patch -p1 --forward < "../../../kernel_patches/next/susfs_fix_patches/$susfs_version/fix_kernel_compat.c.patch"
-            ;;
           *)
             echo "Invalid version: $susfs_version"
             exit 1
@@ -336,6 +340,7 @@ runs:
         EOF
 
     - name: Add SSG I/O Scheduler
+      if: inputs.enable_ssg_io_scheduler == 'true'
       shell: bash
       run: |
         set -euo pipefail
