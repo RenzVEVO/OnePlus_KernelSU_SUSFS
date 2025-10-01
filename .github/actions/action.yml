@@ -334,7 +334,7 @@ runs:
         CONFIG_NET_SCH_FQ_CODEL=y
         EOF
 
-     - name: Add SSG I/O Scheduler
+    - name: Add SSG I/O Scheduler
        shell: bash
        run: |
         set -euo pipefail
