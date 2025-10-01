@@ -28,6 +28,11 @@ on:
           - O2
           - O3
         default: O2
+      ssg_io_scheduler:
+        description: 'Enable Samsung SSG I/O Scheduler'
+        required: true
+        type: boolean
+        default: false
       android12-5_10_susfs_branch_or_commit:
         description: 'Enter SusFS Branch or commit hash for android12-5.10'
         type: string
@@ -121,6 +126,7 @@ jobs:
           ksun_branch: ${{ inputs.ksun_branch }}
           susfs_commit_hash_or_branch: ${{ steps.get-susfs-branch.outputs.susfs_branch }}
           optimize_level: ${{ inputs.optimize_level }}
+          enable_ssg_io_scheduler: ${{ inputs.ssg_io_scheduler }}
           
   trigger-release:
     needs:
