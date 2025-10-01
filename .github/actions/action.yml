@@ -334,6 +334,16 @@ runs:
         CONFIG_NET_SCH_FQ_CODEL=y
         EOF
 
+     - name: Add SSG I/O Scheduler
+       shell: bash
+       run: |
+        set -euo pipefail
+        cd "$CONFIG/kernel_platform"
+        cat >> common/arch/arm64/configs/gki_defconfig <<EOF
+        CONFIG_MQ_IOSCHED_SSG=y
+        CONFIG_MQ_IOSCHED_SSG_CGROUP=y
+        EOF
+
     - name: Add TTL Target Support
       shell: bash
       run: |
